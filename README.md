@@ -1,0 +1,1 @@
+# Hidden Folder for Obsidian  
