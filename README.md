@@ -7,4 +7,4 @@ Hidden Folder in Obsidian:
 
 ## Demo
 
-[![DEMO](doc/demo.png)](doc/demo.mp4)
+![DEMO](doc/demo.gif)

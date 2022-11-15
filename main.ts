@@ -14,10 +14,13 @@ export default class HiddenFolder extends Plugin {
 	settings: HiddenFolderSettings;
 
 	getFilters() {
+		if (!this.settings.folders) return null;
 		const result = [];
-		const folders = this.settings.folders.split("\r\n");
-		for (let i of folders) {
-			result.push(new RegExp(i));
+		const folders = this.settings.folders.split("\n");
+		if (folders.length) {
+			for (let i of folders) {
+				result.push(new RegExp(i));
+			}
 		}
 		return result;
 	}
@@ -47,6 +50,7 @@ export default class HiddenFolder extends Plugin {
 	hiddenFolder() {
 		if (!this.settings.enable) return;
 		const filters = this.getFilters();
+		if (!filters?.length) return;
 		const elements = this.getFolderElements();
 		let count = 0;
 		for (let el of elements) {
@@ -134,32 +138,36 @@ class HiddenFolderSettingTab extends PluginSettingTab {
 		};
 		new Setting(containerEl)
 			.setName('Folders')
-			.setDesc('RegExp: split lines\r\nname\r\nname\/name\r\n.*\/name')
-			.addTextArea(text => text
-				.setPlaceholder('folder for hidden')
-				.setValue(this.plugin.settings.folders)
-				.onChange(async (value) => {
-					settings.folders = value;
-				}))
-			.addButton(button => button.setButtonText('Save')
-				.onClick(async () => {
-					new Notice('Hidden Folder Saving');
-					this.plugin.settings.folders = settings.folders;
-					await this.plugin.saveSettings();
-					this.plugin.hiddenFolder();
-					new Notice('Hidden Folder Success');
-				}));
+			.setDesc('Regular expression')
+			.addTextArea(text => {
+				text.inputEl.style.minWidth = "350px";
+				text.inputEl.style.minHeight = "150px";
+				text.setPlaceholder('.*\\/?attachments\n^abc$\nuse multi lines for multi folders')
+					.setValue(this.plugin.settings.folders)
+					.onChange(async (value) => {
+						settings.folders = value;
+					});
+				return text;
+			});
 		new Setting(containerEl)
 			.setName('Enable')
 			.setDesc('Hidden Folder Enable')
 			.addToggle(toggle => toggle.setValue(this.plugin.settings.enable)
-				.onChange((visible) => {
-					this.plugin.settings.enable = visible;
-					if (visible) {
-						this.plugin.restoreFolder();
-					} else {
+				.onChange((enable) => {
+					settings.enable = enable;
+				}));
+		new Setting(containerEl)
+			.addButton(button => button.setButtonText('Save')
+				.onClick(async () => {
+					new Notice('Hidden Folder Saving');
+					this.plugin.settings.folders = settings.folders;
+					this.plugin.settings.enable = settings.enable;
+					await this.plugin.saveSettings();
+					this.plugin.restoreFolder();
+					if (this.plugin.settings.enable) {
 						this.plugin.hiddenFolder();
 					}
+					new Notice('Hidden Folder Success');
 				}));
 	}
 }
