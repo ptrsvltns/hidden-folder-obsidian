@@ -16,6 +16,7 @@ const DEFAULT_SETTINGS: HiddenFolderSettings = {
 
 export default class HiddenFolder extends Plugin {
   settings: HiddenFolderSettings;
+  observer: MutationObserver;
 
   getFilters() {
     if (!this.settings.folders) return null;
@@ -74,21 +75,20 @@ export default class HiddenFolder extends Plugin {
     }
   }
 
-  subtreeModified = (e: Event) => {
-    if (e.target instanceof HTMLDivElement) {
-      const el: HTMLDivElement = e.target;
-      if (el.classList.contains("nav-folder-children")) {
-        this.hiddenFolder();
-      }
-    }
-  }
-
   async onload() {
+    const filesContainer = document.querySelector(".nav-files-container");
+    if (!filesContainer) {
+      new Notice(lang.get("Not Found Files List"));
+      return;
+    }
+    this.observer = new MutationObserver(() => {
+      this.hiddenFolder();
+    });
+    this.observer.observe(filesContainer, { attributes: false, childList: true, subtree: true });
+
     await this.loadSettings();
 
     this.addSettingTab(new HiddenFolderSettingTab(this.app, this));
-
-    document.addEventListener('DOMSubtreeModified', this.subtreeModified);
 
     this.hiddenFolder();
 
@@ -108,9 +108,9 @@ export default class HiddenFolder extends Plugin {
   }
 
   onunload() {
+    if (!this.observer) return;
     this.restoreFolder();
-
-    document.removeEventListener('DOMSubtreeModified', this.subtreeModified);
+    this.observer.disconnect();
   }
 
   async loadSettings() {
