@@ -1,4 +1,5 @@
 export default {
+  "Not Found Files List": "找不到文件列表",
   "Hidden Folder": "文件隐藏",
   "Restore display": "恢复显示",
   "folders": "文件夹",
