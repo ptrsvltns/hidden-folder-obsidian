@@ -76,17 +76,26 @@ export default class HiddenFolder extends Plugin {
   }
 
   async onload() {
+    await this.loadSettings();
+    this.start(0);
+  }
+
+  start(loop: number) {
+    if (loop > 20) {
+      new Notice(lang.get("Not Found Files List"));
+      return;
+    }
     const filesContainer = document.querySelector(".nav-files-container");
     if (!filesContainer) {
-      new Notice(lang.get("Not Found Files List"));
+      setTimeout(() => {
+        this.start(loop + 1);
+      }, 100);
       return;
     }
     this.observer = new MutationObserver(() => {
       this.hiddenFolder();
     });
     this.observer.observe(filesContainer, { attributes: false, childList: true, subtree: true });
-
-    await this.loadSettings();
 
     this.addSettingTab(new HiddenFolderSettingTab(this.app, this));
 
@@ -103,8 +112,7 @@ export default class HiddenFolder extends Plugin {
           this.restoreFolder();
         }
       });
-    }, 50);
-
+    }, 10);
   }
 
   onunload() {
