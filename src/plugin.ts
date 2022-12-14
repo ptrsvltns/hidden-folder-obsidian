@@ -80,22 +80,38 @@ export default class HiddenFolder extends Plugin {
     this.start(0);
   }
 
+  container: Element | null;
+  
+  observe() {
+    if (!this.container) return;
+    this.observer = new MutationObserver(() => {
+      this.hiddenFolder();
+    });
+    this.observer.observe(this.container, { attributes: true, childList: true, subtree: true });
+  }
+
   start(loop: number) {
     if (loop > 20) {
       new Notice(lang.get("Not Found Files List"));
       return;
     }
-    const filesContainer = document.querySelector(".nav-files-container");
-    if (!filesContainer) {
+    this.container = document.querySelector(".nav-files-container");
+    if (!this.container) {
       setTimeout(() => {
         this.start(loop + 1);
       }, 100);
       return;
     }
-    this.observer = new MutationObserver((records) => {
-      this.hiddenFolder();
-    });
-    this.observer.observe(filesContainer, { attributes: true, childList: true, subtree: true });
+    
+    this.observe();
+
+    this.app.workspace.on("layout-change", () => {
+      const container = document.querySelector(".nav-files-container");
+      if (container !== this.container) {
+        this.container = container;
+        this.observe();
+      }
+    })
 
     this.addSettingTab(new HiddenFolderSettingTab(this.app, this));
 
