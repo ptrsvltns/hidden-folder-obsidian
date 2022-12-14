@@ -1,6 +1,6 @@
 {
 	"name": "hidden-folder-obsidian",
-	"version": "1.0.6",
+	"version": "1.0.7",
 	"description": "Hidden Folder",
 	"main": "main.js",
 	"scripts": {
