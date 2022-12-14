@@ -92,10 +92,10 @@ export default class HiddenFolder extends Plugin {
       }, 100);
       return;
     }
-    this.observer = new MutationObserver(() => {
+    this.observer = new MutationObserver((records) => {
       this.hiddenFolder();
     });
-    this.observer.observe(filesContainer, { attributes: false, childList: true, subtree: true });
+    this.observer.observe(filesContainer, { attributes: true, childList: true, subtree: true });
 
     this.addSettingTab(new HiddenFolderSettingTab(this.app, this));
 
